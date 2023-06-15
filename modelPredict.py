@@ -1,13 +1,13 @@
 import numpy as np
 import cv2
-import matplotlib
-from matplotlib import pyplot as plt
-%matplotlib inline
 import os
 import shutil
 import joblib 
+import pickle
+from matplotlib import pyplot as plt
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report
@@ -16,8 +16,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import GridSearchCV
-
-
 
 
 # Wavelet Transform to get specific image for comparison
@@ -219,6 +217,49 @@ model_params = {
     }
 }
 
+'''
+# Filters are kernels/nodes in first layer, kernel_size -> 3x3, padding -> max pooling for every value
+model = tf.keras.models.Sequential()
+model.add(tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='same', activation='relu', input_shape=[256, 256, 3]))
+
+# First convolutionary and max pooling layers
+model.add(tf.keras.layers.Conv2D(filters=32, kernel_size=3, padding='same', activation='relu'))
+model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
+# Dropout Layer
+model.add(tf.keras.layers.Dropout(0.5))
+
+'''
+'''
+# Second convolutionary and max pooling layers
+model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='same', activation='relu'))
+model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
+'''
+'''
+model.add(tf.keras.layers.Flatten())
+model.add(tf.keras.layers.Dense(units=128, activation='relu'))
+
+model.add(tf.keras.layers.Dense(units=4, activation='softmax'))
+
+model.summary()
+'''
+
+# ResNet50 (transfer learning) Architecture Below
+resNet50 = tf.keras.models.Sequential()
+transfer = tf.keras.applications.resnet50.ResNet50(
+                include_top=False,
+                weights=None,
+                input_shape=(256,256,3),
+                pooling='max',
+                classes=4
+            )
+
+resNet50.add(transfer)
+resNet50.add(tf.keras.layers.Flatten())
+resNet50.add(tf.keras.layers.Dense(units=128, activation='relu'))
+resNet50.add(tf.keras.layers.Dense(units=4, activation='softmax'))
+
+resNet50.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+resNet50.fit(X_train, y_train, epochs=100)
 
 # Makes Predictions
 scores = []
@@ -242,14 +283,23 @@ best_estimators['svm'].score(X_test,y_test)
 best_estimators['random_forest'].score(X_test,y_test)
 best_estimators['logistic_regression'].score(X_test,y_test)
 
+# Find accruacy of resnet-50
+y_predict = []
+ROW = len(y_pred)
+COL = len(y_pred[0])
+for i in range(ROW):
+    maximum = -1
+    index = -1
+    for j in range(COL):
+        if y_pred[i][j] > maximum:
+            maximum = y_pred[i][j]
+            index = j
+    y_predict.append(index)
+
+y_predict = np.array(y_predict)
+print(classification_report(y_test, y_predict))
 
 
 # Pickle File
-joblib.dump(best_clf, 'saved_model.pkl') 
-
-# Json File
-with open("class_dictionary.json","w") as f:
-    f.write(json.dumps(class_dict))
-
-
-
+pickle.dump(best_clf, 'saved_model.pkl') 
+pickle.dump(resNet50, 'cnn.pkl')
