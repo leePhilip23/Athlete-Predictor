@@ -194,6 +194,7 @@ pipe.score(X_test, y_test)
 print(classification_report(y_test, pipe.predict(X_test)))
 
 
+'''
 # Uses svm, random forest, or logistic regression depending on what part of dictionary is called
 model_params = {
     'svm': {
@@ -228,20 +229,16 @@ model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
 # Dropout Layer
 model.add(tf.keras.layers.Dropout(0.5))
 
-'''
-'''
+
 # Second convolutionary and max pooling layers
 model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, padding='same', activation='relu'))
 model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2, padding='valid'))
-'''
-'''
 model.add(tf.keras.layers.Flatten())
 model.add(tf.keras.layers.Dense(units=128, activation='relu'))
 
 model.add(tf.keras.layers.Dense(units=4, activation='softmax'))
 
 model.summary()
-'''
 
 # ResNet50 (transfer learning) Architecture Below
 resNet50 = tf.keras.models.Sequential()
@@ -283,7 +280,7 @@ best_estimators['svm'].score(X_test,y_test)
 best_estimators['random_forest'].score(X_test,y_test)
 best_estimators['logistic_regression'].score(X_test,y_test)
 
-# Find accruacy of resnet-50
+# Find accuracy of resnet-50
 y_predict = []
 ROW = len(y_pred)
 COL = len(y_pred[0])
